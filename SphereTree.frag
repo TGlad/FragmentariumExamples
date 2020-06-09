@@ -36,8 +36,8 @@ float DE(vec3 p)
         float maxH = 0.4;
         if (i==0)
           maxH = -100;
-        vec3 pC = p-vec3(0,0,0.55);
-        if (p.z > maxH && dot(pC, pC) > 0.55*0.55)
+        vec3 pC = p-vec3(0,0,0.6);
+        if (p.z > maxH && dot(pC, pC) > 0.6*0.6)
           break; // definitely outside
         vec3 pD = p-vec3(0,0,0.5);
         float sc = dot(p,p);
