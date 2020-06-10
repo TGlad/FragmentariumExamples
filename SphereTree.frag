@@ -90,7 +90,9 @@ float DE(vec3 p)
           p -= t2 * (2.0 * dot(p, t2) + 1.0);
         p.z = h;
       }
-      float d = (length(p-vec3(0,0,0.4)) - 0.4) * scale; // the 0.4 is slightly more averaging than 0.5
+      float d = (length(p-vec3(0,0,0.4)) - 0.4); // the 0.4 is slightly more averaging than 0.5
+	 d = (sqrt(d + 1.0) - 1) * 2.0;
+      return d * scale;
 		
       return d;
 }
@@ -104,7 +106,7 @@ Detail = -2.84956
 DetailAO = -1.33
 FudgeFactor = 1
 MaxRaySteps = 96
-Dither = 0.5
+Dither = 0.0
 AO = 0,0,0,0.7
 Specular = 0.1666
 SpecularExp = 16
