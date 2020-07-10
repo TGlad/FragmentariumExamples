@@ -5,6 +5,7 @@
 #group Sphere Tree
 
 uniform int Iterations;  slider[0,6,100]
+uniform float PackRatio;  slider[0,1.0,1.22] 
 
 void init() {
 }
@@ -12,22 +13,23 @@ void init() {
 // distance estimation function
 float DE(vec3 p)
 {
-     float rad = 0.5;
-     vec3 s0 = vec3(0.0,1.0,rad);
-     vec3 s1 = vec3(sqrt(3.0)/2.0, -0.5,rad);
-     vec3 s2 = vec3(-sqrt(3.0)/2.0, -0.5,rad);
-     vec3 t0 = vec3(0.0,1.0,0.0);
-     vec3 t1 = vec3(sqrt(3.0)/2.0, -0.5,0.0);
-     vec3 t2 = vec3(-sqrt(3.0)/2.0, -0.5,0.0);
-     vec3 n0 = vec3(1.0,0.0,0.0);
-     vec3 n1 = vec3(-0.5, -sqrt(3.0)/2.0,0.0);
-     vec3 n2 = vec3(-0.5, sqrt(3.0)/2.0,0.0);
-
-     float scale = 1.0; // adjusting this can help with the stepping scheme, but doesn't affect geometry.
      float root3 = sqrt(3.0);
+     vec3 t0 = vec3(0.0,1.0,0.0);
+     vec3 t1 = vec3(root3/2.0, -0.5,0.0);
+     vec3 t2 = vec3(-root3/2.0, -0.5,0.0);
+     vec3 n0 = vec3(1.0,0.0,0.0);
+     vec3 n1 = vec3(-0.5, -root3/2.0,0.0);
+     vec3 n2 = vec3(-0.5, root3/2.0,0.0);
 
-     float innerScale = sqrt(3.0)/(1.0 + sqrt(3.0));
+     float scale = 1.0;
+     float k = PackRatio;
+
+     float innerScale = k*root3/(k*k + root3);
      float innerScaleB = innerScale*innerScale*0.25;
+     float shift = (k*k+root3)/(k*(1.0+root3));
+     float mid = 0.5*(k+1)/2.0;
+     float bufferRad = 0.6*k;
+
      for (int i = 0; i < Iterations; i++)
      {
         vec3 pB = p-vec3(0,0,innerScale*0.5);
@@ -36,12 +38,12 @@ float DE(vec3 p)
         float maxH = 0.4;
         if (i==0)
           maxH = -100;
-        vec3 pC = p-vec3(0,0,0.6);
-        if (p.z > maxH && dot(pC, pC) > 0.6*0.6)
+        vec3 pC = p-vec3(0,0,bufferRad);
+        if (p.z > maxH && dot(pC, pC) > bufferRad*bufferRad)
           break; // definitely outside
-        vec3 pD = p-vec3(0,0,0.5);
+        vec3 pD = p-vec3(0,0,mid);
         float sc = dot(p,p);
-        if (p.z < maxH && dot(pD, pD) > 0.5*0.5)
+        if (p.z < maxH && dot(pD, pD) > mid*mid)
         {
           // needs a sphere inverse
           scale *= sc; 
@@ -52,11 +54,11 @@ float DE(vec3 p)
           // stretch onto a plane at zero 
           scale *= sc;
           p /= sc;
-          p.z -= 1.0;
+          p.z -= shift;
           p.z *= -1.0;
           p *= root3;
           scale /= root3;
-          p.z += 1.0;
+          p.z += shift;
 
           // and rotate it a twelfth of a revolution
           float a = 3.14159265/6.0;
@@ -90,9 +92,10 @@ float DE(vec3 p)
           p -= t2 * (2.0 * dot(p, t2) + 1.0);
         p.z = h;
       }
-      float d = (length(p-vec3(0,0,0.5)) - 0.5);		
+      float d = (length(p-vec3(0,0,0.5*k)) - 0.5*k);		
       return d * scale;
 }
+
 #preset Default
 FOV = 0.4
 Eye = -3.72729,-0.0860174,-1.93389
