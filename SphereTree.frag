@@ -6,6 +6,7 @@
 
 uniform int Iterations;  slider[0,6,100]
 uniform float PackRatio;  slider[0,1.0,1.22] 
+uniform bool Rotated; checkbox[true]
 
 void init() {
 }
@@ -24,9 +25,10 @@ float DE(vec3 p)
      float scale = 1.0;
      float k = PackRatio;
 
-     float innerScale = k*root3/(k*k + root3);
+     float scl = Rotated ? root3 : 1.0;
+     float innerScale = k*scl/(k*k + scl);
      float innerScaleB = innerScale*innerScale*0.25;
-     float shift = (k*k+root3)/(k*(1.0+root3));
+     float shift = (k*k + scl)/(k*(1.0 + scl));
      float mid = 0.5*(k+1)/2.0;
      float bufferRad = 0.6*k;
 
