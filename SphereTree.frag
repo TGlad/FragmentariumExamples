@@ -58,18 +58,20 @@ float DE(vec3 p)
           p /= sc;
           p.z -= shift;
           p.z *= -1.0;
-          p *= root3;
-          scale /= root3;
+          p *= scl;
+          scale /= scl;
           p.z += shift;
-
-          // and rotate it a twelfth of a revolution
-          float a = 3.14159265/6.0;
-          float cosA = cos(a);
-          float sinA = sin(a);
-          float xx = p.x*cosA + p.y*sinA;
-          float yy = -p.x*sinA + p.y*cosA;
-          p.x = xx; 
-          p.y = yy;
+          if (Rotated)
+          {
+            // and rotate it a twelfth of a revolution
+            float a = 3.14159265/6.0;
+            float cosA = cos(a);
+            float sinA = sin(a);
+            float xx = p.x*cosA + p.y*sinA;
+            float yy = -p.x*sinA + p.y*cosA;
+            p.x = xx; 
+            p.y = yy;
+          }
         }
         // now modolu the space so we move to being in just the central hexagon, inner radius 0.5
         float h = p.z;
