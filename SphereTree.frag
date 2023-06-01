@@ -43,8 +43,41 @@ float DE(vec3 p)
         vec3 pC = p-vec3(0,0,bufferRad);
         if (p.z > maxH && dot(pC, pC) > bufferRad*bufferRad)
           break; // definitely outside
+
+        float s = innerScale;
+        float R = k/2.0;
+        vec3 p2 = p - vec3(0,0,k/2.0);
+        if (dot(p2,p2) < R*R)
+        {
+           p.z -= k;
+           // k-s --> 1/(k-s)
+           // k --> 1/k
+           // so difference is 1/(k-s) - 1/k   =  s/ k(k-s), we want it to be just s
+           // so the scale factor s2 = k(k-s)
+           float s2 = k*(k-s); // which needs to be k*s for flat area to work... so only works on unrotated
+           float mag2 = dot(p,p);
+           p *= s2 / mag2;
+           scale *= mag2/s2;
+          
+           p.z = -p.z;
+           p.z -= (k-s);
+           float shft = 0.1*(p.x*p.x + p.y*p.y);
+           p.z += shft;
+           if (p.z > 0.0)
+             p.z = mod(p.z, s);
+           p.z -= shft;
+           p.z += (k-s);
+           p.z = -p.z;
+           
+           float mag3 = dot(p,p);
+           p *= s2/mag3;
+           scale *= mag3/s2;
+
+           p.z += k;
+        }  
         vec3 pD = p-vec3(0,0,mid);
         float sc = dot(p,p);
+        // first we modulo the lateral space (buds laterally distributed)
         if (p.z < maxH && dot(pD, pD) > mid*mid)
         {
           // needs a sphere inverse
@@ -61,6 +94,8 @@ float DE(vec3 p)
           p *= scl;
           scale /= scl;
           p.z += shift;
+
+
           if (Rotated)
           {
             // and rotate it a twelfth of a revolution
@@ -73,7 +108,7 @@ float DE(vec3 p)
             p.y = yy;
           }
         }
-        // now modolu the space so we move to being in just the central hexagon, inner radius 0.5
+        // modulo the space so we move to being in just the central hexagon, inner radius 0.5
         float h = p.z;
         float x = dot(p, -n2) * 2.0/root3;
         float y = dot(p, -n1) * 2.0/root3;  
@@ -84,7 +119,7 @@ float DE(vec3 p)
           x = 1.0-x;
           y = 1.0-y;
         }
-        p = x*t1 - y*t2;
+        p = x*t1 - y*t2;  
 
         // fold the space to be in a kite
         float l0 = dot(p,p);
@@ -94,7 +129,8 @@ float DE(vec3 p)
           p -= t1 * (2.0*dot(t1, p) - 1.0);
         else if (l2 < l0 && l2 < l1)
           p -= t2 * (2.0 * dot(p, t2) + 1.0);
-        p.z = h;
+        p.z = h; 
+
       }
       float d = (length(p-vec3(0,0,0.5*k)) - 0.5*k);		
       return d * scale;
@@ -102,25 +138,41 @@ float DE(vec3 p)
 
 #preset Default
 FOV = 0.4
-Eye = -3.72729,-0.0860174,-1.93389
-Target = 5.14721,0.118786,2.6706
-Up = -0.00486875,0.999305,-0.0369503
-Detail = -2.84956
+Eye = -0.412496,1.19386,1.14239
+Target = 2.1191,-7.29803,-3.49214
+Up = -0.0136503,0.0157513,0.999783
+EquiRectangular = false
+FocalPlane = 1
+Aperture = 0.0002
+Gamma = 2
+ToneMapping = 4
+Exposure = 1
+Brightness = 1
+Contrast = 1
+Saturation = 1
+GaussianWeight = 1
+AntiAliasScale = 2
+Detail = -3.22
 DetailAO = -1.33
-FudgeFactor = 1
+FudgeFactor = 0.61207
 MaxRaySteps = 96
-Dither = 0.0
+Dither = 0
+NormalBackStep = 1
 AO = 0,0,0,0.7
 Specular = 0.1666
 SpecularExp = 16
+SpecularMax = 10
 SpotLight = 1,1,1,0.03261
-SpotLightDir = 0.37142,0.1
+SpotLightDir = 0.10714,0.1
 CamLight = 1,1,1,1.13978
 CamLightMin = 0.61176
 Glow = 1,1,1,0.05479
+GlowMax = 20
 Fog = 0.25926
-HardShadow = 0
+HardShadow = 0.54867
+ShadowSoft = 2
 Reflection = 0
+DebugSun = false
 BaseColor = 1,1,1
 OrbitStrength = 0
 X = 0.5,0.6,0.6,0.2126
@@ -131,8 +183,11 @@ BackgroundColor = 0.278431,0.513725,0.6
 GradientBackground = 0.4348
 CycleColors = false
 Cycles = 1.1
+EnableFloor = false
 FloorNormal = 0,0,0
 FloorHeight = 0
 FloorColor = 1,1,1
-Iterations = 6
+Iterations = 5
+PackRatio = 1
+Rotated = false
 #endpreset
