@@ -8,6 +8,7 @@ uniform int Iterations;  slider[0,6,100]
 uniform float PackRatio;  slider[0,0.8,1.0] 
 uniform bool Dodecahedral; checkbox[false]
 uniform bool ToggleShape; checkbox[false]
+uniform bool IsVoid; checkbox[false]
 #define pi 3.1415926535897932384
 
 void init() {
@@ -77,10 +78,13 @@ float DE(vec3 p)
         {
            minr = minra;
         }
-        float sc = minr/dot(p, p);
-        p *= sc;
-        scale /= sc;
-        recurse = false;
+        if (!IsVoid)
+        {
+           float sc = minr/dot(p, p);
+           p *= sc;
+           scale /= sc;
+           recurse = false;
+        }
      }
      if (is_b)
      {
@@ -148,7 +152,7 @@ float DE(vec3 p)
         p += mid*l;
 
         float m = minr*k;
-        if (length(p) < minr)
+        if (length(p) < minr && !IsVoid)
         {
            p /= m;
            scale *= m;
@@ -158,9 +162,17 @@ float DE(vec3 p)
            recurse = true;
         }
      }
+     if (IsVoid)
+     {
+        p /= minr*k;
+        scale *= minr*k;
+        if (ToggleShape)
+          is_b = !is_b;
+     }
   }
-
-  return( length(p) - minr*k)*scale;
+  if (IsVoid)
+    minr = 0.0;
+  return (length(p) - minr*k)*scale;
 }
 
 #preset Default
