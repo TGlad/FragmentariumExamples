@@ -5,7 +5,7 @@
 #group Sphere Cluster
 
 uniform int Iterations;  slider[0,6,100]
-uniform float PackRatio;  slider[0,0.8,1.0] 
+uniform float PackRatio;  slider[0,0.8,2.0] 
 uniform bool Dodecahedral; checkbox[false]
 uniform bool ToggleShape; checkbox[false]
 uniform bool IsVoid; checkbox[false]
@@ -53,23 +53,19 @@ float DE(vec3 p)
    float minrb =  lb-rb;
 
    float k =  PackRatio;
-   float excess = 1.3; // adds a skin width
 
    bool is_b = Dodecahedral;
    float minr;
    float l, r;
    vec3 mid;
    float scale = 1.0;
+   float largest = length(p) - 2.0;
 
    bool recurse = true;
    for (int i = 0; i < Iterations; i++)
    {
      if (recurse)
      {
-        if (length(p) > excess)
-        {
-            return (length(p) - 1.0) * scale;
-        }
         if (is_b)
         {
             minr = minrb;
@@ -152,7 +148,7 @@ float DE(vec3 p)
         p += mid*l;
 
         float m = minr*k;
-        if (length(p) < minr && !IsVoid)
+        if (length(p) < minr*(1.0+k)/2.0 && !IsVoid)
         {
            p /= m;
            scale *= m;
@@ -172,7 +168,7 @@ float DE(vec3 p)
   }
   if (IsVoid)
     minr = 0.0;
-  return (length(p) - minr*k)*scale;
+  return max(largest, (length(p) - minr*0.9*min(1.0,k))*scale);
 }
 
 #preset Default
